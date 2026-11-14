@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "2.0.0",
+  "info": {
+    "title": "Hardware RAID Controller State Add-on (MegaCLI/StorCLI, SSAcli)",
+    "id": {
+      "group": null,
+      "name": "TA-hwraid",
+      "version": "1.0.0"
+    },
+    "author": [{"name":"Michael \"JKat54\" Bentley","email":"michael@bentleypc.com","company":"BentleyPC LLC"}],
+    "releaseDate": "11/14/2026",
+    "description": "Collects hardware RAID controller state from storcli3/storcli (LSI/MegaRAID), ssacli (HP) or MegaCli, if a controller is present: controller state, drive counts, failed/rebuilding drives and cache/battery state. Emits JSON events to index=main (sourcetype hwraid:status) and hwraid.* metrics to index=metrics (sourcetype hwraid:metrics). Hosts with no hardware RAID report 'absent' with a zero controller count, so fleet coverage stays visible.",
+    "classification": {
+      "intendedAudience": "IT",
+      "categories": ["IT Operations"],
+      "developmentStatus": "Production/Latest"
+    },
+    "commonInformationModels": null,
+    "license": {
+      "name": "Source Available - Free personal use, commercial use requires paid license from BentleyPC LLC",
+      "text": "LICENSE",
+      "uri": null
+    },
+    "privacyPolicy": {
+      "name": null,
+      "text": null,
+      "uri": null
+    },
+    "releaseNotes": {
+      "name": null,
+      "text": null,
+      "uri": null
+    }
+  },
+  "dependencies": null,
+  "tasks": null,
+  "inputGroups": null,
+  "incompatibleApps": null,
+  "platformRequirements": null,
+  "supportedDeployments": [
+    "_standalone",
+    "_distributed"
+  ],
+  "targetWorkloads": ["_search_heads", "_indexers"]
+}

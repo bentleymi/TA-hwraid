@@ -1,0 +1,7 @@
+<application>
+  <nav>
+    <view name="hwraid_overview" />
+    <view name="hwraid_metrics" />
+    <search label="TA-hwraid Events" search="search index=main sourcetype=hwraid:status" />
+  </nav>
+</application>
