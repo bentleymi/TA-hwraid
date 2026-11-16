@@ -3,43 +3,75 @@
   <description>Collects hardware RAID controller state from storcli3/storcli (LSI/MegaRAID), ssacli (HP) or MegaCli, if a controller is present: controller state, drive counts, failed/rebuilding</description>
   <row>
     <panel>
-      <title>Hosts Reporting (latest)</title>
-      <table>
-        <search>
-          <query>index=main sourcetype="hwraid:status"
-| stats latest(_time) as "Last seen", count as Reports by host
-| table host "Last seen" Reports</query>
-          <done/>
-        </search>
-        <option name="drilldown">none</option>
-      </table>
-    </panel>
-  </row>
-  <row>
-    <panel>
-      <title>Distinct hwraid.* Metrics (last hour)</title>
+      <title>RAID controllers (per host, latest)</title>
       <single>
         <search>
-          <query>| mcatalog values(metric_name) as m where index=metrics metric_name="hwraid.*"
-| eval count=mvcount(m)</query>
+          <query>| mstats avg("hwraid.controller_count") as value where index=metrics span=5m
+| fields - _time | tail 1</query>
           <done/>
         </search>
-        <option name="underLabel">hwraid.* metrics streaming</option>
+      </single>
+    </panel>
+    <panel>
+      <title>RAID drives (fleet, latest)</title>
+      <single>
+        <search>
+          <query>index=main sourcetype="hwraid:status"
+| eventstats latest(_time) as lt by host
+| dedup host lt
+| rex field=_raw max_match=0 "\"drive_count\":\s*(?&lt;n&gt;[0-9]+)"
+| mvexpand n
+| stats sum(n) as value</query>
+          <done/>
+        </search>
+      </single>
+    </panel>
+    <panel>
+      <title>Failed RAID drives (fleet, latest)</title>
+      <single>
+        <search>
+          <query>index=main sourcetype="hwraid:status"
+| eventstats latest(_time) as lt by host
+| dedup host lt
+| rex field=_raw max_match=0 "\"failed_drives\":\s*(?&lt;n&gt;[0-9]+)"
+| mvexpand n
+| stats sum(n) as value</query>
+          <done/>
+        </search>
+      </single>
+    </panel>
+    <panel>
+      <title>Drives rebuilding (fleet, latest)</title>
+      <single>
+        <search>
+          <query>index=main sourcetype="hwraid:status"
+| eventstats latest(_time) as lt by host
+| dedup host lt
+| rex field=_raw max_match=0 "\"rebuilding\":\s*(?&lt;n&gt;[0-9]+)"
+| mvexpand n
+| stats sum(n) as value</query>
+          <done/>
+        </search>
       </single>
     </panel>
   </row>
   <row>
     <panel>
-      <title>Issues (newest first)</title>
+      <title>Controllers - latest per host (storcli/perccli/megacli/ssacli)</title>
       <table>
         <search>
-          <query>index=main sourcetype="hwraid:status" _raw="*alarm*"
-| sort - _time
-| table _time host _raw
-| rename _raw as Event
-| head 200</query>
+          <query>index=main sourcetype="hwraid:status"
+| dedup host
+| rex field=_raw max_match=0 "\"(?&lt;k&gt;[^\"]+)\":\s*(?&lt;o&gt;\{[^{}]*\})"
+| where match(o,"\"state\"")
+| eval z=mvzip(k,o,"^^")
+| mvexpand z
+| rex field=z "^(?&lt;k&gt;[^^]+)\^\^(?&lt;o&gt;.+)$"
+| spath input=o path=product | spath input=o path=state | spath input=o path=state_ok | spath input=o path=drive_count | spath input=o path=failed_drives | spath input=o path=rebuilding
+| table host k product state state_ok drive_count failed_drives rebuilding</query>
           <done/>
         </search>
+        <option name="count">100</option>
         <option name="drilldown">none</option>
       </table>
     </panel>
