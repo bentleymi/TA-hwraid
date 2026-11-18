@@ -6,7 +6,7 @@
       <title>Controller count (per host)</title>
       <chart>
         <search>
-          <query>| mstats avg("hwraid.controller_count") as value where index=metrics by metric_name span=5m
+          <query>| mstats avg("hwraid.controller_count") as value where index=metrics by host, metric_name span=5m
 | rename value as "hwraid.controller_count"</query>
           <done/>
         </search>
